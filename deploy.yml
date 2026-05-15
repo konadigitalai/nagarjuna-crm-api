@@ -1,0 +1,41 @@
+name: Dev Deployment Pipeline
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ dev ]
+
+jobs:
+  deploy:
+    name: CI/CD Deploy to dev
+    runs-on: self-hosted
+    if: github.ref == 'refs/heads/dev'
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Remove existing Docker container (if running)
+        run: |
+          CONTAINER_NAME=nag-dev-crm-be
+          if [ "$(docker ps -aq -f name=$CONTAINER_NAME)" ]; then
+            docker rm -f $CONTAINER_NAME
+          fi
+
+      - name: Remove previous Docker images (if any)
+        run: |
+          IMAGE_NAME=nag-dev-crm-be
+          if [ "$(docker images -q $IMAGE_NAME)" ]; then
+            docker rmi -f $IMAGE_NAME
+          fi
+
+      - name: Build latest Docker image
+        run: |
+          docker build -t nag-dev-crm-be .
+
+      - name: Run Docker container
+        run: |
+          docker run -d --name nag-dev-crm-be -p 3013:3000 nag-dev-crm-be
