@@ -31,7 +31,7 @@ router.delete('/', authorize, deleteContacts);
 router.post('/contactDataUpdate', authorize, contactDataUpdate);
 
 
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ dest: process.env.VERCEL ? '/tmp/uploads' : 'uploads/' });
 router.post('/bulkupload', upload.single('file'), processExcelData);
 
 export default router;
