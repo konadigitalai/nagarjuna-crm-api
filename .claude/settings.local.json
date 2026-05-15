@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C \"c:/Users/EswarSaiBandi/Desktop/nagarjuna-crm-api\" log --all --oneline -- src/controllers/tracking-images.controller.ts)",
+      "Bash(git -C \"c:/Users/EswarSaiBandi/Desktop/nagarjuna-crm-api\" show f7b5dd6:src/controllers/tracking-images.controller.ts)",
+      "Bash(git -C \"c:/Users/EswarSaiBandi/Desktop/nagarjuna-crm-api\" reflog --all)",
+      "Bash(git -C \"c:/Users/EswarSaiBandi/Desktop/nagarjuna-crm-api\" show d86927d:src/controllers/tracking-images.controller.ts)",
+      "Bash(git -C \"c:/Users/EswarSaiBandi/Desktop/nagarjuna-crm-api\" show d86927d:src/database.ts)"
+    ]
+  }
+}
