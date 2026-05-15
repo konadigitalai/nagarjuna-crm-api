@@ -25,7 +25,10 @@ import followUpRouter from './routes/followUp.router';
 import masterDashbordRouter from './routes/master-dashbord.router';
 import whatsappRouter from './routes/whatsapp.router';
 import groupRouter from './routes/group.routes';
-import './scheduled-tasks'; // Automatically initializes scheduled tasks
+if (!process.env.VERCEL) {
+  // node-cron does not run reliably on serverless; only initialize off-Vercel
+  require('./scheduled-tasks');
+}
 
 const app = express();
 
@@ -79,9 +82,12 @@ app.get('/', function (req, res) {
   res.send({ message: 'nagarjuna steels services is up on running.' });
 });
 
-// Set up the Express application to listen on port 3000
-const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  startServer();
-});
+if (!process.env.VERCEL) {
+  const PORT = Number(process.env.PORT) || 3000;
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+    startServer();
+  });
+}
+
+export default app;
