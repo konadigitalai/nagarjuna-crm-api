@@ -1,9 +1,10 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 
-import './config';
-import { checkDatabaseAvailability } from './database';
 import { apiDocumentation } from './docs/api-doc';
 
 // routers
@@ -28,6 +29,8 @@ import masterDashbordRouter from './routes/master-dashbord.router';
 import whatsappRouter from './routes/whatsapp.router';
 import groupRouter from './routes/group.routes';
 
+import { checkDatabaseAvailability } from './database';
+
 const app = express();
 
 /* =========================
@@ -37,7 +40,6 @@ const app = express();
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: false }));
 
-// FIXED CORS (IMPORTANT)
 app.use(
   cors({
     origin: [
@@ -82,7 +84,7 @@ app.use('/api/v1/whatsapp', whatsappRouter);
 app.use('/api/v1/group', groupRouter);
 
 /* =========================
-   HEALTH CHECK ROUTE
+   HEALTH CHECK
 ========================= */
 
 app.get('/', (req, res) => {
@@ -92,8 +94,7 @@ app.get('/', (req, res) => {
 });
 
 /* =========================
-   DB INIT (IMPORTANT FIX)
-   Runs ONCE at startup
+   DB INIT (SAFE)
 ========================= */
 
 async function init() {
@@ -110,11 +111,10 @@ async function init() {
   }
 }
 
-// Always run DB init
 init();
 
 /* =========================
-   LOCAL SERVER ONLY
+   START SERVER (LOCAL ONLY)
 ========================= */
 
 if (!process.env.VERCEL) {
