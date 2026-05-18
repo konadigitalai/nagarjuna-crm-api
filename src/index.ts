@@ -1,10 +1,12 @@
-// Import necessary modules and types
 import express from 'express';
 import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
+
 import './config';
 import { checkDatabaseAvailability } from './database';
 import { apiDocumentation } from './docs/api-doc';
+
+// routers
 import userRouter from './routes/users.router';
 import dealerRouter from './routes/contacts.router';
 import contactActiviteRouter from './routes/activite.router';
@@ -25,21 +27,38 @@ import followUpRouter from './routes/followUp.router';
 import masterDashbordRouter from './routes/master-dashbord.router';
 import whatsappRouter from './routes/whatsapp.router';
 import groupRouter from './routes/group.routes';
-if (!process.env.VERCEL) {
-  // node-cron does not run reliably on serverless; only initialize off-Vercel
-  require('./scheduled-tasks');
-}
 
 const app = express();
 
-// Configure middleware for parsing JSON and URL-encoded data
+/* =========================
+   MIDDLEWARE
+========================= */
+
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: false }));
 
-app.use(cors());
+// FIXED CORS (IMPORTANT)
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://nagarjuna-crm-webapp-psi.vercel.app"
+    ],
+    credentials: true,
+  })
+);
+
 app.options('*', cors());
 
+/* =========================
+   SWAGGER
+========================= */
+
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(apiDocumentation));
+
+/* =========================
+   ROUTES
+========================= */
 
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/contacts', dealerRouter);
@@ -62,31 +81,47 @@ app.use('/api/v1/master-dashbord', masterDashbordRouter);
 app.use('/api/v1/whatsapp', whatsappRouter);
 app.use('/api/v1/group', groupRouter);
 
-async function startServer() {
+/* =========================
+   HEALTH CHECK ROUTE
+========================= */
+
+app.get('/', (req, res) => {
+  res.status(200).json({
+    message: 'Nagarjuna CRM API is running',
+  });
+});
+
+/* =========================
+   DB INIT (IMPORTANT FIX)
+   Runs ONCE at startup
+========================= */
+
+async function init() {
   try {
-    const isDatabaseAvailable = await checkDatabaseAvailability();
-    if (isDatabaseAvailable) {
-      // Start the server only if the database is available
-      console.log('Started database server', process.env.DB_DATABASE);
+    const ok = await checkDatabaseAvailability();
+
+    if (ok) {
+      console.log('✅ Database connected successfully');
     } else {
-      console.log('Server cannot start due to database unavailability.');
+      console.log('❌ Database connection failed');
     }
   } catch (err) {
-    console.error('Error starting server:', err);
+    console.error('❌ DB init error:', err);
   }
 }
 
-app.get('/', function (req, res) {
-  startServer()
-  res.status(200);
-  res.send({ message: 'nagarjuna steels services is up on running.' });
-});
+// Always run DB init
+init();
+
+/* =========================
+   LOCAL SERVER ONLY
+========================= */
 
 if (!process.env.VERCEL) {
   const PORT = Number(process.env.PORT) || 3000;
+
   app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-    startServer();
+    console.log(`🚀 Server running on port ${PORT}`);
   });
 }
 
